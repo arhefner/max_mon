@@ -31,7 +31,7 @@ def send_byte(ser, data, delay, escape):
         ser.write(bytes([data]))
         time.sleep(delay)
 
-def send_segments(intel_hex, ser, delay):
+def send_segments(intel_hex, ser, delay, compact):
     """Send segments from Intel hex file to loader."""
     segments = intel_hex.segments()
     i = 1
@@ -42,7 +42,9 @@ def send_segments(intel_hex, ser, delay):
 
         with click.progressbar(
             range(*segment),
-            label=f'[{segment[0]:04X}:{segment[1]:04X}]'
+            label=None if compact else f'[{segment[0]:04X}:{segment[1]:04X}]',
+#            show_eta=not compact,
+            width=20 if compact else 0
         ) as progress:
             for addr in progress:
                 send_byte(ser, intel_hex[addr], delay, True)
@@ -99,7 +101,13 @@ def end_transfer(ser):
     callback=cb_validate_address,
     default=None
 )
-def main(file, port, baud, start, delay, run, entry):
+@click.option(
+    '--compact', '-c',
+    help='use compact format for progress bar',
+    is_flag=True,
+    default=False
+)
+def main(file, port, baud, start, delay, run, entry, compact):
     """
     Send a code file to an ELF computer with MAX binary loader.
 
@@ -119,7 +127,7 @@ def main(file, port, baud, start, delay, run, entry):
     with serial.serial_for_url(port) as ser:
         ser.baudrate = baud
 
-        send_segments(intel_hex, ser, delay)
+        send_segments(intel_hex, ser, delay, compact)
 
         if run:
             if entry is None:
