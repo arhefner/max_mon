@@ -287,7 +287,7 @@ LDNEXT:     CALL SERIN
             PLO STATE
             BR  LDNEXT
 STATE0:     GHI STATE       ;State 0 - Check if the byte is
-            ANI $FC         ;a special character ($7D-$7f)
+            ANI $FC         ;a special character ($7C-$7f)
             XRI $7C         ;If it is, process it
             BZ  SPECIAL
             GHI STATE       ;If not, copy it to destination
@@ -690,6 +690,8 @@ RDDONE:     LDI $00         ;Terminate the string.
 ;------------------------------------------------------------------------
 ;Routine to read a single character at 38400 baud from serial port.
 ;
+;This routine is designed for a 4MHz system clock.
+;
 ;On exit, RB.0 contains the character.
 SERIN:      BN3 SERIN       ;Wait for start bit.
             NOP
@@ -768,6 +770,9 @@ SI_WAIT:    B3  SI_WAIT
 
 ;------------------------------------------------------------------------
 ;Routine to write a single character at 38400 baud to serial port.
+;
+;
+;This routine is designed for a 4MHz system clock.
 ;
 ;On entry, RB.0 contains the character.
 SEROUT:     GLO RB
